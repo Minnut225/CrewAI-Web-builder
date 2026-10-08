@@ -1,0 +1,70 @@
+design_analysis_task:
+  description: >
+    Analyze requirements for '{target_phase}' based on '{plans_dir}' ({plan_files}):
+    {plans_summary}
+
+    Target Phase Scope:
+    {phase_scope}
+
+    Use `read_file` to inspect '{plans_dir}/ARCHITECTURE_PLAN.md' and `list_dir` to inspect existing workspace.
+    Produce a concise, contract-driven Technical Blueprint specifying:
+    1. Exact Domain Models & Database Schema needed for this phase.
+    2. Exact REST Endpoints and DTOs with camelCase properties.
+    3. Exact list of files to be created by Backend Engineer and Frontend Engineer.
+  expected_output: >
+    A concise Technical Blueprint and exact file checklist for {target_phase}.
+  agent: ba
+
+backend_coding_task:
+  description: >
+    YOU ARE THE SENIOR BACKEND ENGINEER. YOUR PRIMARY MISSION IS TO WRITE CODE TO DISK.
+
+    MANDATORY WORKFLOW FOR '{target_phase}':
+    1. Check the required backend files for this phase:
+       {phase_scope}
+    2. FOR EACH REQUIRED BACKEND FILE:
+       Execute the `write_file` tool call with:
+         - `file_path`: the exact path (e.g. backend/pom.xml, backend/src/main/resources/application.yml, etc.)
+         - `content`: the complete, fully implemented code
+       Do NOT merely describe or discuss code in text. You MUST call `write_file` for every file.
+    3. QUALITY RULES:
+       - Complete imports, annotations, and fully implemented logic.
+       - ZERO 0-byte stub files, ZERO TODO placeholders.
+       - Apply SOLID, ACID (@Transactional), camelCase DTOs, snake_case DB columns, and Zero-Float (Long currency).
+    4. Only after calling `write_file` for all required files, output a brief confirmation table of files created.
+  expected_output: >
+    A confirmation table of all backend files created on disk via the write_file tool.
+  agent: backend
+
+frontend_coding_task:
+  description: >
+    YOU ARE THE SENIOR FRONTEND ENGINEER. YOUR PRIMARY MISSION IS TO WRITE REACT/TYPESCRIPT CODE TO DISK.
+
+    MANDATORY WORKFLOW FOR '{target_phase}':
+    1. Check the required frontend files for this phase:
+       {phase_scope}
+       Inspect design mockups in '{design_dir}' if needed for colors, layout, and components.
+    2. FOR EACH REQUIRED FRONTEND FILE:
+       Execute the `write_file` tool call with:
+         - `file_path`: the exact path (e.g. frontend/package.json, frontend/src/App.tsx, etc.)
+         - `content`: the complete, production-ready TSX / CSS / Vite config
+       Do NOT merely describe or discuss code in text. You MUST call `write_file` for every file.
+    3. QUALITY RULES:
+       - Complete JSX/TSX, Tailwind styles, and state management hooks.
+       - ZERO 0-byte stub files, ZERO TODO placeholders.
+       - Align with backend API contracts (camelCase JSON properties).
+    4. Only after calling `write_file` for all required files, output a brief confirmation table of files created.
+  expected_output: >
+    A confirmation table of all frontend files created on disk via the write_file tool.
+  agent: frontend
+
+qa_verification_task:
+  description: >
+    Validate codebase integrity for '{target_phase}':
+    1. Run `check_code_health` on workspace to verify all required files exist and contain real code.
+    2. If any 0-byte stub file or missing file is found, use `write_file` to fix or populate it immediately.
+    3. Generate the Phase Sign-Off & Verification Report for {target_phase}.
+  expected_output: >
+    QA verification report confirming all files exist on disk, zero 0-byte stubs, and phase completion.
+  agent: qa
+  output_file: output/coding_team_report.md

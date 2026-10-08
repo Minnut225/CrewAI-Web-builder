@@ -1,0 +1,259 @@
+# ==============================================================================
+# tasks.yaml - Autonomous Software Engineering Work Breakdown Structure & Tasks
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# STAGE 1: BA Requirement Analysis & Atomic Task Decomposition (Approach A)
+# ------------------------------------------------------------------------------
+ba_decomposition_task:
+  description: >
+    YOU ARE THE LEAD BUSINESS ANALYST & SYSTEM ARCHITECT. YOUR MISSION IS TO ANALYZE REQUIREMENTS FOR '{target_phase}' AND DECOMPOSE IT INTO AN ATOMIC WORK BREAKDOWN STRUCTURE (WBS).
+
+    INPUT SPECIFICATIONS:
+    - Target Phase Scope: {phase_scope}
+    - Plans Folder: '{plans_dir}' ({plan_files})
+    - Architecture & PRD Summary: {plans_summary}
+    - Design Folder: '{design_dir}'
+
+    AUDIT & RECONNAISSANCE (MANDATORY):
+    1. Read '{plans_dir}/PRD.md' and '{plans_dir}/ARCHITECTURE_PLAN.md' using `read_file` to thoroughly inspect the domain requirements, database schema, and REST specifications.
+    2. Audit existing code on disk:
+       - Check existing entities and packages in 'backend/src/main/java/'
+       - Check existing services in 'backend/src/main/java/'
+       - Check existing UI mockups in '{design_dir}/' using `list_dir`
+    3. DOMAIN INTEGRITY & ANTI-HALLUCINATION RULE:
+       - Strictly adhere to the domain rules, entities, and business logic defined in '{plans_dir}'.
+       - Never invent features, mock data models, or endpoints that contradict the project specifications.
+       - Precision Rule: Monetary and high-precision numeric values MUST use Java Long or BigDecimal (Zero-Float rule).
+
+    DECOMPOSITION INSTRUCTIONS (APPROACH A - TIERED ATOMIC TASKS):
+    Decompose the target phase into exactly 3 Backend sub-tasks, 2 Frontend sub-tasks, and 1 QA verification task:
+
+    1. BACKEND TIER:
+       - Task BE-1 (Data Contracts & Repositories): Entities, Enums, camelCase Request/Response DTOs, Spring Data JPA Repositories matching the package structure in 'backend/src/main/java/'.
+       - Task BE-2 (Business Logic & Services): Service Interfaces in 'service/<Name>Service.java' AND Service Implementations in 'service/impl/<Name>ServiceImpl.java'. Enforce ACID (@Transactional) and numeric precision.
+       - Task BE-3 (REST Controllers, Security & Tests): Spring REST Controllers with camelCase DTOs, SecurityConfig endpoints, and JUnit 5 / Mockito tests.
+
+    2. FRONTEND TIER:
+       - Task FE-1 (Types & API Services): TypeScript interfaces in 'src/types/' matching backend DTOs 1:1, and API service clients in 'src/services/' using authenticated 'api' instance.
+       - Task FE-2 (UI Pages, Components & Design System Layout): Replicating UI mockups from '{design_dir}', incorporating application shell layout (Navigation Sidebar, Header) and design tokens.
+
+    3. QA TIER:
+       - Task QA-1 (Acceptance Criteria & Integration): Formulate 3-5 concrete, testable acceptance criteria to verify for this phase.
+
+    REQUIRED OUTPUT FORMAT:
+    You MUST output a detailed Markdown report followed by a SINGLE fenced JSON code block at the end with the EXACT schema:
+    ```json
+    {
+      "phase_name": "{target_phase}",
+      "summary": "High-level architectural summary of the phase",
+      "backend_tasks": [
+        {
+          "task_id": "BE-1",
+          "title": "Data Contracts & Repositories",
+          "target_files": ["backend/.../entity/...", "backend/.../dto/..."],
+          "details": "Specific entity fields, DTO contracts, repository methods"
+        },
+        {
+          "task_id": "BE-2",
+          "title": "Business Logic & Services (ACID & Precision)",
+          "target_files": ["backend/.../service/...Service.java", "backend/.../service/impl/...ServiceImpl.java"],
+          "details": "Interface methods, implementation logic, transactional data integrity"
+        },
+        {
+          "task_id": "BE-3",
+          "title": "REST Controllers, Security & Tests",
+          "target_files": ["backend/.../controller/...", "backend/.../config/SecurityConfig.java", "backend/src/test/..."],
+          "details": "Endpoints, HTTP methods, security rules, test methods"
+        }
+      ],
+      "frontend_tasks": [
+        {
+          "task_id": "FE-1",
+          "title": "TypeScript Types & API Services",
+          "target_files": ["frontend/src/types/...", "frontend/src/services/..."],
+          "details": "TypeScript interfaces matching backend DTOs, API methods using api client"
+        },
+        {
+          "task_id": "FE-2",
+          "title": "UI Pages, Components & Design System Layout",
+          "target_files": ["frontend/src/pages/...", "frontend/src/components/..."],
+          "details": "Application shell layout, Navigation, Header, Design system tokens"
+        }
+      ],
+      "acceptance_criteria": [
+        "mvn test passes with 0 failures and 0 errors",
+        "npm run build passes with 0 TypeScript/Vite errors",
+        "Specific business rule criteria..."
+      ]
+    }
+    ```
+  expected_output: >
+    A comprehensive Architectural Plan and WBS Markdown report ending with the valid JSON block containing the decomposed atomic tasks.
+  agent: ba
+
+# Legacy alias for backward compatibility
+design_analysis_task:
+  description: >
+    Analyze requirements for '{target_phase}' based on '{plans_dir}' ({plan_files}):
+    {plans_summary}
+    Target Phase Scope: {phase_scope}
+  expected_output: >
+    A concise Technical Blueprint and exact file checklist for {target_phase}.
+  agent: ba
+
+
+# ------------------------------------------------------------------------------
+# STAGE 2: BACKEND TIERED ATOMIC EXECUTION (BE-1 -> BE-2 -> BE-3)
+# ------------------------------------------------------------------------------
+backend_contract_task:
+  description: >
+    YOU ARE THE SENIOR BACKEND ENGINEER EXECUTING TASK [BE-1: DATA CONTRACTS & REPOSITORIES] FOR '{target_phase}'.
+
+    MISSION:
+    Write all necessary Entities, Enums, camelCase Request/Response DTOs, and Spring Data JPA Repositories directly to disk matching the project package structure in 'backend/src/main/java/'.
+
+    MANDATORY RULES:
+    1. NUMERIC PRECISION: All monetary and high-precision numeric fields MUST use Java `Long` or `BigDecimal` (Zero-Float rule). Never use Double or Float for currency.
+    2. CAMELCASE CONTRACTS: All DTO fields must use standard `camelCase`.
+    3. REPOSITORY INTERFACES: Extend `JpaRepository<Entity, Long>` with necessary query methods.
+    4. ZERO STUBS: Implement complete entity relationships, constructors, getters, setters, or Lombok annotations (`@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`).
+    5. Call `run_command(command="mvn test-compile", cwd="backend")` to verify 0 syntax or entity compilation errors.
+  expected_output: >
+    Table of backend Entity, DTO, and Repository files created on disk and validated via mvn test-compile.
+  agent: backend
+
+backend_service_task:
+  description: >
+    YOU ARE THE SENIOR BACKEND ENGINEER EXECUTING TASK [BE-2: BUSINESS LOGIC & SERVICES] FOR '{target_phase}'.
+
+    MISSION:
+    Implement service layer following strict Enterprise Architecture, SOLID, and ACID principles.
+
+    MANDATORY RULES (ZERO TOLERANCE):
+    1. INTERFACE + IMPLEMENTATION PATTERN:
+       - Every service MUST have an Interface in 'backend/src/main/java/**/service/<Name>Service.java'.
+       - The implementation class MUST be in 'backend/src/main/java/**/service/impl/<Name>ServiceImpl.java' and declare 'public class <Name>ServiceImpl implements <Name>Service'.
+       - NEVER overwrite or turn an existing Service interface into a concrete class!
+    2. DATA INTEGRITY & ACID:
+       - Ensure all mutating operations preserve relational integrity and business constraints across dependent entities as specified in the PRD.
+       - Annotate all write/state-modifying methods with '@Transactional(rollbackFor = Exception.class)'.
+    3. ZERO-FLOAT: Monetary values strictly Java `Long` or `BigDecimal`.
+    4. Call `run_command(command="mvn test-compile", cwd="backend")` to verify all services compile cleanly.
+  expected_output: >
+    Table of Service Interfaces and Service Implementation classes created on disk and validated via mvn test-compile.
+  agent: backend
+
+backend_controller_task:
+  description: >
+    YOU ARE THE SENIOR BACKEND ENGINEER EXECUTING TASK [BE-3: REST CONTROLLERS, SECURITY & TESTS] FOR '{target_phase}'.
+
+    MISSION:
+    Implement REST Controllers, configure Security endpoints, and write comprehensive automated Unit / Integration Tests.
+
+    MANDATORY RULES:
+    1. REST CONTROLLERS:
+       - Annotate with '@RestController' and '@RequestMapping("/api/v1/...")'.
+       - Inject Service Interfaces (NOT concrete implementations).
+       - Return ResponseEntity with standard ResponseWrapper or DTOs.
+    2. SECURITY CONFIGURATION:
+       - If new public or authenticated endpoints are needed, update SecurityConfig.
+    3. AUTOMATED TESTS:
+       - Write JUnit 5 / Mockito tests in 'backend/src/test/java/**/service/' or controller tests in 'backend/src/test/java/**/controller/'.
+       - Test edge cases, validation, and domain logic.
+    4. BUILD GATE VERIFICATION:
+       - Execute `run_command(command="mvn test", cwd="backend")`.
+       - If any test fails, inspect stack trace and patch files until 0 failures and 0 errors!
+  expected_output: >
+    Confirmation of REST Controllers, Security updates, and test suites passing with 0 failures under mvn test.
+  agent: backend
+
+# Legacy alias for backward compatibility
+backend_coding_task:
+  description: >
+    YOU ARE THE SENIOR BACKEND ENGINEER. WRITE 100% COMPILABLE JAVA CODE TO DISK FOLLOWING STRICT ENTERPRISE ARCHITECTURE.
+    Follow Interface + Impl pattern, ACID, and Zero-Float precision. Run `mvn test` to verify.
+  expected_output: >
+    A confirmation table of all backend files created and successfully validated via mvn test.
+  agent: backend
+
+
+# ------------------------------------------------------------------------------
+# STAGE 3: FRONTEND CONTRACT-DRIVEN EXECUTION (FE-1 -> FE-2)
+# ------------------------------------------------------------------------------
+frontend_contract_task:
+  description: >
+    YOU ARE THE SENIOR FRONTEND ENGINEER EXECUTING TASK [FE-1: TYPESCRIPT TYPES & API CLIENTS] FOR '{target_phase}'.
+
+    MISSION:
+    Create TypeScript interface definitions and authenticated API client methods strictly synchronized with the Backend DTOs.
+
+    MANDATORY RULES:
+    1. API CLIENT & AUTHENTICATION:
+       - ALWAYS import 'api' from '../services/api' (or '@/services/api').
+       - NEVER import raw 'axios' directly! Raw axios drops JWT Bearer authorization.
+       - Handle response payload unwrapping (`response.data.data ?? response.data`).
+    2. CONTRACT SYNCHRONIZATION:
+       - Match TypeScript interfaces in 'src/types/*.ts' 1:1 with backend DTOs (camelCase fields, appropriate types for numbers/strings).
+    3. ZERO STUBS: Fully implement all API methods (GET, POST, PUT, DELETE).
+  expected_output: >
+    Confirmation of TypeScript type definitions and API service files created on disk.
+  agent: frontend
+
+frontend_ui_task:
+  description: >
+    YOU ARE THE SENIOR FRONTEND ENGINEER EXECUTING TASK [FE-2: UI COMPONENTS, PAGES & DESIGN SYSTEM LAYOUT] FOR '{target_phase}'.
+
+    MISSION:
+    Create complete, responsive React/TypeScript components and pages replicating UI designs from '{design_dir}'.
+
+    MANDATORY RULES:
+    1. SHELL & NAVIGATION LAYOUT:
+       - Full-page screens MUST include standard application shell navigation (Sidebar and Header).
+       - Maintain the analytical canvas layout matching the design templates.
+    2. DESIGN SYSTEM TOKENS:
+       - Strictly inspect and replicate the design tokens from '{design_dir}' (e.g. 'DESIGN.md', 'code.html').
+       - Replicate the exact color palette, typography classes, and icons from the mockups.
+       - Never invent generic or random styling that breaks the design theme.
+    3. BUILD GATE VERIFICATION:
+       - Execute `run_command(command="npm run build", cwd="frontend")`.
+       - Fix any TypeScript or Vite bundling errors until build succeeds with 0 errors.
+  expected_output: >
+    Confirmation table of UI components and pages created on disk and validated with 0 errors under npm run build.
+  agent: frontend
+
+# Legacy alias for backward compatibility
+frontend_coding_task:
+  description: >
+    YOU ARE THE SENIOR FRONTEND ENGINEER. WRITE 100% TYPE-SAFE REACT/TYPESCRIPT CODE TO DISK FOLLOWING THE DESIGN SYSTEM IN '{design_dir}'.
+    Use authenticated api client, shell layout, and design system tokens. Verify via `npm run build`.
+  expected_output: >
+    A confirmation table of all frontend files created on disk and validated via npm run build.
+  agent: frontend
+
+
+# ------------------------------------------------------------------------------
+# STAGE 4: QA VERIFICATION & ACCEPTANCE GATE (QA-1)
+# ------------------------------------------------------------------------------
+qa_verification_task:
+  description: >
+    STRICT VERIFICATION & QUALITY GATE FOR '{target_phase}':
+    You are the final gatekeeper. NEVER sign off or mark a phase as PASSED without actual terminal verification.
+
+    MANDATORY VERIFICATION STEPS:
+    1. Codebase Health & Acceptance Criteria Check:
+       - Verify all target files from BA Decomposition Plan exist and contain real implementation.
+       - Validate each acceptance criteria specified by BA in the WBS plan.
+    2. Backend Test & Compilation Gate:
+       - Execute `run_command(command="mvn test", cwd="backend")`.
+       - Confirm: BUILD SUCCESS, Failures: 0, Errors: 0.
+    3. Frontend Build Gate:
+       - Execute `run_command(command="npm run build", cwd="frontend")`.
+       - Confirm: 0 TypeScript and Vite compilation errors.
+    4. Sign-Off Report:
+       - ONLY mark "Status: PASSED / APPROVED" if BOTH backend `mvn test` and frontend `npm run build` returned 0 errors.
+       - Include terminal test execution metrics in the report.
+  expected_output: >
+    A rigorous QA Verification and Sign-Off Report containing real terminal test execution results, confirming 0 compilation errors, 0 test failures, and 0 stub files.
+  agent: qa
+  output_file: output/coding_team_report.md
